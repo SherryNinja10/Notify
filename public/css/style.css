@@ -1,0 +1,53 @@
+body {
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.username {
+    display: flex;
+    flex-direction: row;
+}
+
+.email {
+    display: flex;
+    flex-direction: row;
+}
+
+label {
+    display: block;
+    margin: 1em 0;
+    padding: 1em;
+    border: 0.125em solid black;
+    font-size: 1.2em;
+}
+
+input {
+    margin: 1em 1em 1em 0;
+    padding: 1em;
+    border: 0.125em solid black;
+    margin-left: 1em;
+    font-size: 1.2em;
+}
+
+button {
+    padding: 1em;
+    font-size: 1.2em;
+    border: 0.125em solid black;
+    background-color: #fff;
+    cursor: pointer;
+}
