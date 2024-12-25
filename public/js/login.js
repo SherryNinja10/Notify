@@ -6,8 +6,8 @@ loginForm.addEventListener('submit', async (e) => {
     const formData = new FormData(e.target);
 
     const data = {
-        username: formData.get('username'),
-        email: formData.get('email')
+        username: formData.get('usernameLogin'),
+        email: formData.get('emailLogin')
     };
 
     try {
@@ -25,7 +25,7 @@ loginForm.addEventListener('submit', async (e) => {
         if (response.ok) {
             alert('success');
         } else {
-            alert('User not found' + result.error);
+            alert('User not found ' + result.error);
         }
     } catch (error) {
         alert(error);

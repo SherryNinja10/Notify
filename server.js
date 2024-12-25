@@ -55,13 +55,15 @@ app.post("/loginUser", function (req, res) {
         function (err, results) {
             if (err) throw err;
             if (results.length > 0) {
+                console.log("User logged in successfully");
                 res.setHeader("Content-Type", "application/json");
                 res.json({ message: "User logged in successfully" });
                 res.send();
             } else {
+                console.log("Invalid username or email");
+                res.status(500);
                 res.setHeader("Content-Type", "application/json");
                 res.json({ error: "Invalid username or email" });
-                res.send();
             }
         }
     );
