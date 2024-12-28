@@ -28,6 +28,11 @@ form {
     flex-direction: row;
 }
 
+.privatecode {
+    display: flex;
+    flex-direction: row;
+}
+
 label {
     display: block;
     margin: 1em 0;

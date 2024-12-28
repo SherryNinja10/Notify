@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const fs = require('fs');
 const dotenv = require('dotenv');
+const bcrypt = require('bcrypt');
 dotenv.config();
 
 app.use(express.urlencoded({ extended: false }));
@@ -35,9 +36,10 @@ app.get("/login", function (req, res) {
 
 app.post("/register", function (req, res) {
     const json = req.body;
+    const hashedPassword = bcrypt.hashSync(json.privatecode, 10);
     pool.query(
-        `INSERT INTO users (username, email) VALUES (?, ?)`,
-        [json.username, json.email],
+        `INSERT INTO users (username, email, privatecode) VALUES (?, ?, ?)`,
+        [json.username, json.email, hashedPassword],
         function (err) {
             if (err) throw err;
             res.setHeader("Content-Type", "application/json");
@@ -50,20 +52,30 @@ app.post("/register", function (req, res) {
 app.post("/loginUser", function (req, res) {
     const json = req.body;
     pool.query(
-        `SELECT * FROM users WHERE username = ? AND email = ?`,
-        [json.username, json.email],
-        function (err, results) {
+        `SELECT * FROM users WHERE email = ?`,
+        [json.email],
+        async function (err, results) {
             if (err) throw err;
+            console.log(results);
             if (results.length > 0) {
-                console.log("User logged in successfully");
-                res.setHeader("Content-Type", "application/json");
-                res.json({ message: "User logged in successfully" });
-                res.send();
+                const user = results[0];
+                const match = await bcrypt.compare(json.privatecode, user.privatecode);
+                if (match) {
+                    console.log("User logged in successfully");
+                    res.setHeader("Content-Type", "application/json");
+                    res.json({ message: "User logged in successfully" });
+                    res.send();
+                } else {
+                    console.log("Invalid email or password");
+                    res.status(500);
+                    res.setHeader("Content-Type", "application/json");
+                    res.json({ error: "Invalid email or password" });
+                }
             } else {
-                console.log("Invalid username or email");
+                console.log("Invalid email or password");
                 res.status(500);
                 res.setHeader("Content-Type", "application/json");
-                res.json({ error: "Invalid username or email" });
+                res.json({ error: "Invalid email or password" });
             }
         }
     );

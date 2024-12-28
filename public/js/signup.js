@@ -7,7 +7,8 @@ signUpForm.addEventListener('submit', async (e) => {
 
     const data = {
         username: formData.get('username'),
-        email: formData.get('email')
+        email: formData.get('email'),
+        privatecode: formData.get('privatecode')
     };
 
     try {

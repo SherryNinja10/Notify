@@ -6,8 +6,8 @@ loginForm.addEventListener('submit', async (e) => {
     const formData = new FormData(e.target);
 
     const data = {
-        username: formData.get('usernameLogin'),
-        email: formData.get('emailLogin')
+        email: formData.get('emailLogin'),
+        privatecode: formData.get('privatecodeLogin')
     };
 
     try {
