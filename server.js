@@ -4,6 +4,7 @@ const app = express();
 const fs = require('fs');
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt');
+const JWT = require('jsonwebtoken');
 dotenv.config();
 
 app.use(express.urlencoded({ extended: false }));
@@ -30,6 +31,12 @@ app.get("/", function (req, res) {
 
 app.get("/login", function (req, res) {
     let doc = fs.readFileSync("./app/html/login.html", "utf8");
+    res.setHeader("Content-Type", "text/html");
+    res.send(doc);
+});
+
+app.get("/main", function (req, res) {
+    let doc = fs.readFileSync("./app/html/main.html", "utf8");
     res.setHeader("Content-Type", "text/html");
     res.send(doc);
 });
@@ -62,6 +69,9 @@ app.post("/loginUser", function (req, res) {
                 const match = await bcrypt.compare(json.privatecode, user.privatecode);
                 if (match) {
                     console.log("User logged in successfully");
+                    const token = JWT.sign({ email: user.email }, process.env.SECRET_KEY, { expiresIn: '1h' });
+                    console.log(token);
+                    res.cookie("jwt", token, { httpOnly: true, secure: true });
                     res.setHeader("Content-Type", "application/json");
                     res.json({ message: "User logged in successfully" });
                     res.send();
