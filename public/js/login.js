@@ -24,6 +24,7 @@ loginForm.addEventListener('submit', async (e) => {
         
         if (response.ok) {
             alert('success');
+            window.location.href = '/main';
         } else {
             alert('User not found ' + result.error);
         }

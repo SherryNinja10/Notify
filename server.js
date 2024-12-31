@@ -5,10 +5,12 @@ const fs = require('fs');
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt');
 const JWT = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 dotenv.config();
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/js", express.static("./public/js"));
 app.use("/css", express.static("./public/css"));
@@ -35,7 +37,15 @@ app.get("/login", function (req, res) {
     res.send(doc);
 });
 
-app.get("/main", function (req, res) {
+app.get("/main", (req, res, next) => {
+    const token = req.cookies.jwt;
+    if (token && JWT.verify(token, process.env.SECRET_KEY)) {
+        next();
+    } else {
+        console.log("User not logged in");
+        res.redirect("/login");
+    }
+}, function (req, res) {
     let doc = fs.readFileSync("./app/html/main.html", "utf8");
     res.setHeader("Content-Type", "text/html");
     res.send(doc);
@@ -51,7 +61,6 @@ app.post("/register", function (req, res) {
             if (err) throw err;
             res.setHeader("Content-Type", "application/json");
             res.json({ message: "User registered successfully" });
-            res.send();
         }
     );
 });
@@ -74,7 +83,6 @@ app.post("/loginUser", function (req, res) {
                     res.cookie("jwt", token, { httpOnly: true, secure: true });
                     res.setHeader("Content-Type", "application/json");
                     res.json({ message: "User logged in successfully" });
-                    res.send();
                 } else {
                     console.log("Invalid email or password");
                     res.status(500);
@@ -89,6 +97,108 @@ app.post("/loginUser", function (req, res) {
             }
         }
     );
+});
+
+app.get("/username", function (req, res) {
+    const token = req.cookies.jwt;
+    if (token && JWT.verify(token, process.env.SECRET_KEY)) {
+        const decoded = JWT.decode(token);
+        pool.query(
+            `SELECT username FROM users WHERE email = ?`,
+            [decoded.email],
+            function (err, results) {
+                if (err) throw err;
+                res.setHeader("Content-Type", "application/json");
+                res.json(results);
+            }
+        );
+    } else {
+        console.log("User not logged in");
+        res.redirect("/login");
+    }
+});
+
+app.post("/editUsername", function (req, res) {
+    const token = req.cookies.jwt;
+    if (token && JWT.verify(token, process.env.SECRET_KEY)) {
+        const decoded = JWT.decode(token);
+        const json = req.body
+        pool.query(
+            `UPDATE users SET username = ? WHERE email = ?`,
+            [json.newUsername, decoded.email],
+            function (err) {
+                if (err) throw err;
+                res.setHeader("Content-Type", "application/json");
+                res.json({ message: "Username updated successfully" });
+            }
+        );
+    }
+});
+
+app.get("/notes", function (req, res) {
+    const token = req.cookies.jwt;
+    if (token && JWT.verify(token, process.env.SECRET_KEY)) {
+        const decoded = JWT.decode(token);
+        pool.query(
+            `SELECT * FROM note WHERE userID = (SELECT userID FROM users WHERE email = ?)`,
+            [decoded.email],
+            function (err, results) {
+                if (err) throw err;
+                res.setHeader("Content-Type", "application/json");
+                res.json(results);
+            }
+        );
+    } else {
+        console.log("User not logged in");
+        res.redirect("/login");
+    }
+});
+
+app.post("/addNote", function (req, res) {
+    const token = req.cookies.jwt;
+    if (token && JWT.verify(token, process.env.SECRET_KEY)) {
+        const decoded = JWT.decode(token);
+        const json = req.body
+        pool.query(
+            `INSERT INTO note (note, userID) VALUES (?, (SELECT userID FROM users WHERE email = ?))`,
+            [json.note, decoded.email],
+            function (err) {
+                if (err) throw err;
+                res.setHeader("Content-Type", "application/json");
+                res.json({ message: "Note added successfully" });
+            }
+        )
+    } else {
+        console.log("User not logged in");
+        res.redirect("/login");
+    }
+});
+
+app.post("/editNote", function (req, res) {
+    const token = req.cookies.jwt;
+    if (token && JWT.verify(token, process.env.SECRET_KEY)) {
+        const decoded = JWT.decode(token);
+        const json = req.body
+        pool.query(
+            `UPDATE note SET note = ? WHERE userID = (SELECT userID FROM users WHERE email = ?) AND noteID = ?`,
+            [json.newNote, decoded.email, json.noteID],
+            function (err) {
+                if (err) throw err;
+                res.setHeader("Content-Type", "application/json");
+                res.json({ message: "Note updated successfully" });
+            }
+        )
+    } else {
+        console.log("User not logged in");
+        res.redirect("/login");
+    }
+});
+
+app.post("/logout", function (req, res) {
+    res.clearCookie("jwt");
+    console.log("User logged out successfully");
+    res.setHeader("Content-Type", "application/json");
+    res.json({ message: "User logged out successfully" });
 });
 
 app.use(function (req, res, next) {
