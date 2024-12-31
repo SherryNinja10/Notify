@@ -18,9 +18,9 @@ app.use("/js", express.static("./public/js"));
 app.use("/css", express.static("./public/css"));
 
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    database: 'notifydb',
+    host: process.env.HOST,
+    user: process.env.USER,
+    database: process.env.DATABASE,
     password: process.env.PASSWORD,
     connectionLimit: 10,
     waitForConnections: true,
