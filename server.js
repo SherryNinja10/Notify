@@ -8,6 +8,8 @@ const JWT = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 dotenv.config();
 
+const secret_key = process.env.SECRET_KEY;
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
@@ -39,7 +41,7 @@ app.get("/login", function (req, res) {
 
 app.get("/main", (req, res, next) => {
     const token = req.cookies.jwt;
-    if (token && JWT.verify(token, process.env.SECRET_KEY)) {
+    if (token && JWT.verify(token, secret_key)) {
         next();
     } else {
         console.log("User not logged in");
@@ -78,7 +80,7 @@ app.post("/loginUser", function (req, res) {
                 const match = await bcrypt.compare(json.privatecode, user.privatecode);
                 if (match) {
                     console.log("User logged in successfully");
-                    const token = JWT.sign({ email: user.email }, process.env.SECRET_KEY, { expiresIn: '1h' });
+                    const token = JWT.sign({ email: user.email }, secret_key, { expiresIn: '1h' });
                     console.log(token);
                     res.cookie("jwt", token, { httpOnly: true, secure: true });
                     res.setHeader("Content-Type", "application/json");
@@ -101,7 +103,7 @@ app.post("/loginUser", function (req, res) {
 
 app.get("/username", function (req, res) {
     const token = req.cookies.jwt;
-    if (token && JWT.verify(token, process.env.SECRET_KEY)) {
+    if (token && JWT.verify(token, secret_key)) {
         const decoded = JWT.decode(token);
         pool.query(
             `SELECT username FROM users WHERE email = ?`,
@@ -120,7 +122,7 @@ app.get("/username", function (req, res) {
 
 app.post("/editUsername", function (req, res) {
     const token = req.cookies.jwt;
-    if (token && JWT.verify(token, process.env.SECRET_KEY)) {
+    if (token && JWT.verify(token, secret_key)) {
         const decoded = JWT.decode(token);
         const json = req.body
         pool.query(
@@ -137,7 +139,7 @@ app.post("/editUsername", function (req, res) {
 
 app.get("/notes", function (req, res) {
     const token = req.cookies.jwt;
-    if (token && JWT.verify(token, process.env.SECRET_KEY)) {
+    if (token && JWT.verify(token, secret_key)) {
         const decoded = JWT.decode(token);
         pool.query(
             `SELECT * FROM note WHERE userID = (SELECT userID FROM users WHERE email = ?)`,
@@ -156,7 +158,7 @@ app.get("/notes", function (req, res) {
 
 app.post("/addNote", function (req, res) {
     const token = req.cookies.jwt;
-    if (token && JWT.verify(token, process.env.SECRET_KEY)) {
+    if (token && JWT.verify(token, secret_key)) {
         const decoded = JWT.decode(token);
         const json = req.body
         pool.query(
@@ -176,7 +178,7 @@ app.post("/addNote", function (req, res) {
 
 app.post("/editNote", function (req, res) {
     const token = req.cookies.jwt;
-    if (token && JWT.verify(token, process.env.SECRET_KEY)) {
+    if (token && JWT.verify(token, secret_key)) {
         const decoded = JWT.decode(token);
         const json = req.body
         pool.query(
@@ -186,6 +188,25 @@ app.post("/editNote", function (req, res) {
                 if (err) throw err;
                 res.setHeader("Content-Type", "application/json");
                 res.json({ message: "Note updated successfully" });
+            }
+        )
+    } else {
+        console.log("User not logged in");
+        res.redirect("/login");
+    }
+});
+
+app.delete("/deleteNote/:noteID", function (req, res) {
+    const token = req.cookies.jwt;
+    if (token && JWT.verify(token, secret_key)) {
+        const decoded = JWT.decode(token);
+        pool.query(
+            `DELETE FROM note WHERE userID = (SELECT userID FROM users WHERE email = ?) AND noteID = ?`,
+            [decoded.email, req.params.noteID],
+            function (err) {
+                if (err) throw err;
+                res.setHeader("Content-Type", "application/json");
+                res.json({ message: "Note deleted successfully" });
             }
         )
     } else {

@@ -89,7 +89,7 @@ async function getNotes() {
                 notes.appendChild(noteContainer);
 
                 editButton.addEventListener('click', async () => {
-                    const newNote = prompt('Enter new note');
+                    const newNote = prompt('Enter new note (max 100 characters)');
 
                     if (newNote) {
                         if (newNote.length === 0) {
@@ -110,7 +110,18 @@ async function getNotes() {
                             getNotes();
                         }
                     }
-                });                
+                });    
+                
+                deleteButton.addEventListener('click', async () => {
+                    await fetch(`/deleteNote/${note.noteID}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    getNotes();
+                });
             });
         }
     } else {
@@ -123,7 +134,7 @@ getNotes();
 const addNote = document.getElementById('newNote');
 
 addNote.addEventListener('click', async () => {
-    const note = prompt('Enter new note');
+    const note = prompt('Enter new note (max 100 characters)');
 
     if (note) {
         if (note.length === 0) {
