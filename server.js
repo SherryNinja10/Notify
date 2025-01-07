@@ -18,10 +18,10 @@ app.use("/js", express.static("./public/js"));
 app.use("/css", express.static("./public/css"));
 
 const pool = mysql.createPool({
-    host: roundhouse.proxy.rlwy.net,
-    user: root,
-    database: railway,
-    password: AwvSmTbYEGpplUbSBJfqaREeGsiTmriT,
+    host: 'roundhouse.proxy.rlwy.net',
+    user: 'root',
+    database: 'railway',
+    password: 'AwvSmTbYEGpplUbSBJfqaREeGsiTmriT',
     port: 16802,
     connectionLimit: 10,
     waitForConnections: true,
