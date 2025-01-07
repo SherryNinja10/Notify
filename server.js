@@ -21,7 +21,7 @@ const pool = mysql.createPool({
     host: 'roundhouse.proxy.rlwy.net',
     user: 'root',
     database: 'railway',
-    password: 'AwvSmTbYEGpplUbSBJfqaREeGsiTmriT',
+    password: process.env.PASSWORD,
     port: 16802,
     connectionLimit: 10,
     waitForConnections: true,
